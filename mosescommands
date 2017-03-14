@@ -1,0 +1,38 @@
+id to en
+
+cd ~/pba2017
+
+perl clean-corpus-n.perl corpus/corpus id pdg corpus/corpus.clean 1 50
+
+
+
+
+
+~/mosesdecoder32/mosesdecoder/scripts/training/clean-corpus-n.perl corpus/asean-mt id en corpus/asean-mt.clean 1 50
+clean-corpus-n.perl corpus/corpus id sbs corpus/corpus.clean 1 50
+
+perl ~/pba2017/tokenizing.plx corpus/corpus.clean.id corpus/corpus.tokenized.id
+perl ~/pba2017/tokenizing.plx corpus/corpus.clean.pdg corpus/corpus.tokenized.pdg
+
+~/mosesdecoder32/mosesdecoder/scripts/tokenizer/lowercase.perl < corpus/corpus.tokenized.id > corpus/corpus.lowercased.id
+~/mosesdecoder32/mosesdecoder/scripts/tokenizer/lowercase.perl < corpus/corpus.tokenized.sbs > corpus/corpus.lowercased.pdg
+
+//baru
+perl lowercase.perl < corpus/corpus.tokenized.id > corpus/corpus.lowercased.id
+perl lowercase.perl < corpus/corpus.tokenized.pdg > corpus/corpus.lowercased.pdg
+
+~/mosesdecoder32/srilm/bin/i686/ngram-count -order 3 -interpolate -unk -text corpus/asean-mt.mono.en -lm lm/english.lm
+
+~/mosesdecoder32/mosesdecoder/scripts/training/train-model.perl -root-dir . --corpus corpus/asean-mt.lowercased --f id --e en --lm 0:3:/home/user/pba2017/lm/english.lm:0
+
+~/mosesdecoder32/mosesdecoder/moses-cmd/src/moses -f model/moses.ini
+
+
+BLEU
+~/mosesdecoder32/mosesdecoder/moses-cmd/src/moses -f model/moses.ini < in > out
+~/mosesdecoder32/mosesdecoder/scripts/generic/multi-bleu.perl ref < out
+
+
+==== web
+perl moses.pl localhost 1986
+echo "saya pergi ke pasar" | nc localhost 1986
